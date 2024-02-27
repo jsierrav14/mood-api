@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsNumber, IsString, } from 'class-validator';
 
 export class AnalysisDto {
   @IsString()
@@ -13,4 +13,6 @@ export class AnalysisDto {
   color: string;
   @IsNumber()
   sentimentScore: number;
+  @IsDate()
+  date: Date;
 }

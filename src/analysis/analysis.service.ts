@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Analysis } from './analysis.entity';
 import { Repository } from 'typeorm';
 import { AnalysisDto } from './dtos/analysis.dto';
+import { User } from 'src/users/user.entity';
 
 const parser = StructuredOutputParser.fromZodSchema(
   z.object({
@@ -62,7 +63,8 @@ export class AnalysisService {
     return input;
   };
 
-  async analyzeEntry(entry) {
+  async analyzeEntry(entry, user: User) {
+    console.log('🚀 ~ AnalysisService ~ analyzeEntry ~ user:', user);
     const input = await this.getPrompt(entry.content);
     const model = new OpenAI({ temperature: 0, modelName: 'gpt-3.5-turbo' });
     const output = await model.call(input);
@@ -71,7 +73,11 @@ export class AnalysisService {
       const analysis: AnalysisDto = this.repo.create(
         await parser.parse(output),
       );
-      return this.repo.save(analysis);
+      return this.repo.save({
+        ...analysis,
+        user,
+        date: new Date().toLocaleDateString(),
+      });
     } catch (e) {
       const fixParser = OutputFixingParser.fromLLM(
         new OpenAI({ temperature: 0, modelName: 'gpt-3.5-turbo' }),
@@ -82,10 +88,13 @@ export class AnalysisService {
     }
   }
 
-  getAnalysis() {
-    return this.repo.find();
+  getAnalysis(date?: string) {
+    return this.repo.find({ where: { date: new Date(date) } });
   }
 
+  getAnalysisById(id?: number) {
+    return this.repo.find({ where: { id } });
+  }
   
   async qa(question, entries) {
     const docs = entries.map(

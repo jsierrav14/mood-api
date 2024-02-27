@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/user.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Analysis{
@@ -16,4 +17,9 @@ export class Analysis{
   color: string;
   @Column()
   sentimentScore: number;
+  @Column()
+  date: Date;
+
+  @ManyToOne(() => User, (user) => user.analisis)
+  user: User;
 }
